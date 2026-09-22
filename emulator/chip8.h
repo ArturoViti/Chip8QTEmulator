@@ -1,8 +1,0 @@
-//
-// Created by Arturo Viti on 21/09/2026.
-//
-
-#ifndef CHIP8QTEMULATOR_CHIP8_H
-#define CHIP8QTEMULATOR_CHIP8_H
-
-#endif //CHIP8QTEMULATOR_CHIP8_H
