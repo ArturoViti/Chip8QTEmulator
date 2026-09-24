@@ -10,5 +10,6 @@
     <file>icons/chip8-256.png</file>
     <file>icons/chip8-512.png</file>
     <file>icons/chip8-macos-1024.png</file>
+    <file>backgrounds/chip8-background.jpg</file>
   </qresource>
 </RCC>
