@@ -40,7 +40,7 @@ class Chip8 {
     private:
         uint8_t memory[CHIP8CONF::MEMORY_SIZE]{};
         uint8_t VX[CHIP8CONF::REGISTER_SIZE]{};             // General Purpose Register
-        uint16_t I = 0;                                      // Address index
+        uint16_t I = 0;                                     // Address index
         uint8_t ST = 0;                                     // Sound Timer
         uint8_t DT = 0;                                     // Delay Timer
         uint8_t SP = 0;                                     // Stack Pointer
@@ -53,6 +53,12 @@ class Chip8 {
         uint8_t GB[CHIP8CONF::DISPLAY_WIDTH][CHIP8CONF::DISPLAY_HEIGHT]{};    // Graphics Buffer
 
         Chip8();
+        ~Chip8();
+
+        void fetchAndExec();
+        void updateTimers();
+        void reset();
+        void load(const std::string &filename);
 };
 
 #endif //CHIP8QTEMULATOR_CHIP8_H
