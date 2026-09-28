@@ -6,6 +6,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "Logging/LogHandler.h"
 
 namespace {
     constexpr int INSTRUCTIONS_PER_FRAME = 10;   // ~600 instructions at 60 Hz
@@ -30,13 +31,14 @@ MainWindow::MainWindow(Chip8 &chip8, QWidget *parent)
     connect(ui->actionGitHub, &QAction::triggered, this, [] {
         QDesktopServices::openUrl(QUrl("https://github.com/ArturoViti"));
     });
+
     connect(ui->actionLoad_ROM_File, &QAction::triggered, this, [this] {
         const QString fileName = QFileDialog::getOpenFileName(
-            this, tr("Apri ROM CHIP-8"), QDir::homePath(),
-            tr("CHIP-8 ROM (*.ch8 *.c8);;Tutti i file (*)")
+            this, tr("Open CHIP-8 ROM"), QDir::homePath(),
+            tr("All Files (*);;CHIP-8 ROM (*.ch8 *.c8)")
         );
 
-        if (!fileName.isEmpty())
+        if ( !fileName.isEmpty() )
             loadRom(fileName);
     });
 
@@ -50,14 +52,13 @@ void MainWindow::loadRom(const QString &path) {
     {
         this->chip8.reset();
         this->chip8.load(path.toStdString());
+        qInfo(Log::EmulatorLog) << "ROM Loaded Successfully." << path.toStdString();
         display->setFocus();
         display->update();
         cpuTimer.start(FRAME_MS);
+        qInfo(Log::Chip8Log) << "Chip8 Started.";
     }
-    catch (const std::exception &e)
-    {
-        QMessageBox::critical(this, "Errore", e.what());
-    }
+    catch (const std::exception &e) { qFatal(Log::EmulatorLog) << e.what(); }
 }
 
 void MainWindow::step() {
@@ -69,11 +70,7 @@ void MainWindow::step() {
         chip8.updateTimers();
         display->update();
     }
-    catch (const std::exception &e)
-    {
-        cpuTimer.stop();
-        QMessageBox::critical(this, "Errore di esecuzione", e.what());
-    }
+    catch ( const std::exception &e ) { cpuTimer.stop(); qFatal(Log::Chip8Log) << e.what(); }
 }
 
-MainWindow::~MainWindow() { delete ui; }
+MainWindow::~MainWindow() { qInfo(Log::EmulatorLog) << "Emulator ended."; delete ui; }

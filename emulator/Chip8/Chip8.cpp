@@ -20,9 +20,7 @@ Chip8::Chip8() {
     );
 }
 
-Chip8::~Chip8() {
-    this->reset();
-}
+Chip8::~Chip8() { this->reset(); }
 
 void Chip8::execute( const uint16_t opcode ) {
     /*
@@ -63,17 +61,17 @@ void Chip8::execute( const uint16_t opcode ) {
                     break;
                 }
                 default:
-                    throw IllegalInstructionException(std::string( std::to_string(opcode)) );
+                    throw IllegalInstructionException(opcode, this->PC);
             }
             break;
         }
         // 1nnn - JP addr. Jump to location nnn.
         case 0x1000:
         {
-            if ( nnn >= CHIP8CONF::START_PROGRAM_ADDRESS && nnn <= (CHIP8CONF::MEMORY_SIZE - 1) )
+            if ( nnn >= CHIP8CONF::START_PROGRAM_ADDRESS && nnn <= CHIP8CONF::MEMORY_SIZE - 1 )
                 this->PC = nnn;
             else
-                throw SegmentationFaultException(std::string( std::to_string(nnn)) );
+                throw SegmentationFaultException(nnn, opcode, this->PC);
 
             break;
         }
@@ -81,17 +79,17 @@ void Chip8::execute( const uint16_t opcode ) {
         case 0x2000:
         {
             // The interpreter increments the stack pointer, then puts the current PC on the top of the stack. The PC is then set to nnn.
-            if ( nnn >= CHIP8CONF::START_PROGRAM_ADDRESS && nnn <= (CHIP8CONF::MEMORY_SIZE - 1) )
+            if ( nnn >= CHIP8CONF::START_PROGRAM_ADDRESS && nnn <= CHIP8CONF::MEMORY_SIZE - 1 )
             {
                 if ( this->SP + 1 >= CHIP8CONF::STACK_SIZE )
-                    throw StackOverflowException(std::string( std::to_string(nnn)) );
+                    throw StackOverflowException(SP, CHIP8CONF::STACK_SIZE, opcode, this->PC);
 
                 this->SP++;
                 this->stack[SP] = this->PC;
                 this->PC = nnn;
             }
             else
-                throw SegmentationFaultException(std::string( std::to_string(nnn)) );
+                throw SegmentationFaultException(nnn, opcode, this->PC);
 
             break;
         }
@@ -101,7 +99,7 @@ void Chip8::execute( const uint16_t opcode ) {
             if ( this->VX[x] == kk )
             {
                 if ( this->PC + 2 > CHIP8CONF::MEMORY_SIZE )
-                    throw SegmentationFaultException(std::string( std::to_string(this->PC)) );
+                    throw SegmentationFaultException(this->PC + 2, opcode, this->PC);
 
                 this->PC += 2;
             }
@@ -113,7 +111,7 @@ void Chip8::execute( const uint16_t opcode ) {
             if ( this->VX[x] != kk )
             {
                if ( this->PC + 2 > CHIP8CONF::MEMORY_SIZE )
-                    throw SegmentationFaultException(std::string( std::to_string(this->PC + 2)) );
+                   throw SegmentationFaultException(this->PC + 2, opcode, this->PC);
 
                 this->PC += 2;
             }
@@ -123,12 +121,12 @@ void Chip8::execute( const uint16_t opcode ) {
         case 0x5000:
         {
             if ( n != 0x00 )
-                throw IllegalInstructionException(std::string( std::to_string(opcode)) );
+                throw IllegalInstructionException(opcode, this->PC);
 
             if ( this->VX[x] == this->VX[y] )
             {
                 if ( this->PC + 2 > CHIP8CONF::MEMORY_SIZE )
-                    throw SegmentationFaultException(std::string( std::to_string(this->PC + 2)) );
+                    throw SegmentationFaultException(this->PC + 2, opcode, this->PC);
 
                 this->PC += 2;
             }
@@ -140,9 +138,9 @@ void Chip8::execute( const uint16_t opcode ) {
         case 0x7000:
         {
             if ( x < 0 || x >= CHIP8CONF::REGISTER_SIZE )
-                throw BadValueException(std::string( std::to_string(x)) );
+                throw BadValueException(x, opcode, this->PC);
             if ( kk > 0xFF )
-                throw BadValueException(std::string( std::to_string(kk)) );
+                throw BadValueException(kk, opcode, this->PC);
 
             this->VX[x] += kk;
             break;
@@ -163,7 +161,7 @@ void Chip8::execute( const uint16_t opcode ) {
                 case 0x4:
                 {
                     const uint16_t sum = this->VX[x] + this->VX[y];
-                    this->VX[CHIP8CONF::FLAG_REGISTER_INDEX] = ( sum > 0xFF ) ? 1 : 0;
+                    this->VX[CHIP8CONF::FLAG_REGISTER_INDEX] = sum > 0xFF ? 1 : 0;
                     this->VX[x] = sum & 0xFF;
                     break;
                 }
@@ -198,7 +196,7 @@ void Chip8::execute( const uint16_t opcode ) {
                     break;
                 }
                 default:
-                    throw IllegalInstructionException(std::string( std::to_string(opcode)) );
+                    throw IllegalInstructionException(opcode, this->PC);
             }
             break;
         }
@@ -208,7 +206,7 @@ void Chip8::execute( const uint16_t opcode ) {
             if ( this->VX[x] != this->VX[y] )
             {
                 if ( this->PC + 2 > CHIP8CONF::MEMORY_SIZE )
-                    throw SegmentationFaultException(std::string( std::to_string(this->PC + 2)) );
+                    throw SegmentationFaultException(this->PC + 2, opcode, this->PC);
 
                 this->PC += 2;
             }
@@ -220,12 +218,13 @@ void Chip8::execute( const uint16_t opcode ) {
         case 0xB000:
         {
             if ( this->VX[0] + nnn > CHIP8CONF::MEMORY_SIZE )
-                throw SegmentationFaultException(std::string( std::to_string(nnn)) );
+                throw SegmentationFaultException(this->VX[0] + nnn, opcode, this->PC);
+
             this->PC = nnn + this->VX[0];
             break;
         }
         // Cxkk - RND Vx, byte. Set Vx = random byte AND kk.
-        case 0xC000: { this->VX[x] = (std::rand() % (0xFF + 1)) & kk; break; }
+        case 0xC000: { this->VX[x] = std::rand() % (0xFF + 1) & kk; break; }
         // Dxyn - DRW Vx, Vy, nibble. Display n-byte sprite starting at memory location I at (Vx, Vy). VF = collision.
         case 0xD000:
         {
@@ -282,7 +281,7 @@ void Chip8::execute( const uint16_t opcode ) {
                     break;
                 }
                 default:
-                    throw IllegalInstructionException(std::string( std::to_string(opcode)) );
+                    throw IllegalInstructionException(opcode, this->PC);
             }
             break;
         }
@@ -320,11 +319,11 @@ void Chip8::execute( const uint16_t opcode ) {
                 case 0x33:
                 {
                     const uint8_t value = this->VX[x];
-                    if ( (this->I + 2) > CHIP8CONF::MEMORY_SIZE )
-                        throw SegmentationFaultException(std::string( std::to_string(this->I)) );
+                    if ( this->I + 2 > CHIP8CONF::MEMORY_SIZE )
+                        throw SegmentationFaultException(this->I + 2, opcode, this->PC);
 
                     this->memory[this->I] = value / 100;
-                    this->memory[this->I+1] = (value / 10) % 10;
+                    this->memory[this->I+1] = value / 10 % 10;
                     this->memory[this->I+2] = value  % 10;
                     break;
                 }
@@ -347,12 +346,12 @@ void Chip8::execute( const uint16_t opcode ) {
                     break;
                 }
                 default:
-                    throw IllegalInstructionException(std::string( std::to_string(opcode)) );
+                    throw IllegalInstructionException(opcode, this->PC);
             }
             break;
         }
         default:
-            throw IllegalInstructionException(std::string( std::to_string(opcode)) );
+            throw IllegalInstructionException(opcode, this->PC);
 
     }
 
@@ -361,7 +360,7 @@ void Chip8::execute( const uint16_t opcode ) {
 void Chip8::fetchAndExec() {
     const uint8_t msbOpCode = this->memory[this->PC];
     const uint8_t lsbOpCode = this->memory[this->PC + 1];
-    const uint16_t opcode = (msbOpCode << 8 | lsbOpCode);
+    const uint16_t opcode = msbOpCode << 8 | lsbOpCode;
     this->PC += 2;
     this->execute(opcode);
 }
@@ -369,19 +368,19 @@ void Chip8::fetchAndExec() {
 void Chip8::load( const std::string &filename ) {
     std::ifstream rom(filename, std::ios::in | std::ios::binary | std::ios::ate);
     if (!rom)
-        throw ROMLoadingException("Impossibile aprire la ROM: " + filename);
+        throw ROMLoadingException("Cannot Open ROM File: " + filename);
 
     const std::streamsize size = rom.tellg();
     constexpr std::size_t maxSize = sizeof(this->memory) - CHIP8CONF::START_PROGRAM_ADDRESS;
 
     if (size <= 0)
-        throw ROMLoadingException("ROM vuota: " + filename);
-    if (static_cast<std::size_t>(size) > maxSize)
-        throw ROMLoadingException("ROM troppo grande per la memoria del CHIP-8");
+        throw ROMLoadingException("ROM is empty: " + filename);
+    if ( static_cast<std::size_t>(size) > maxSize )
+        throw ROMLoadingException("Too Large ROM");
 
     rom.seekg(0, std::ios::beg);
     if ( !rom.read(reinterpret_cast<char*>(&this->memory[CHIP8CONF::START_PROGRAM_ADDRESS]), size) )
-        throw ROMLoadingException("Errore durante la lettura della ROM");
+        throw ROMLoadingException("Error on ROM Reading");
 }
 
 void Chip8::reset() {

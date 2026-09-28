@@ -9,6 +9,8 @@
 #include "ui/mainwindow.h"
 #include <Exception/IllegalInstructionException.h>
 
+#include "Logging/LogHandler.h"
+
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
     #ifdef Q_OS_MACOS
@@ -18,6 +20,10 @@ int main(int argc, char *argv[]) {
     #endif
     a.setApplicationName("Chip8QTEmulator");
     a.setApplicationDisplayName("Chip8QTEmulator");
+
+    qInstallMessageHandler(Log::messageHandler);
+    qSetMessagePattern(Log::LOG_FORMAT.data());
+    qInfo(Log::EmulatorLog) << "Emulator started.";
 
     Chip8 chip8;
     MainWindow mainWin(chip8);

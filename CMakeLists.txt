@@ -29,6 +29,7 @@ add_executable(Chip8QTEmulator main.cpp
         emulator/Chip8/Chip8Controller.cpp
         emulator/Chip8/Chip8Controller.h
         ui/mainwindow.h ui/mainwindow.cpp ui/mainwindow.ui
+        emulator/Logging/LogHandler.h
 )
 set(AUTOGEN_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/Chip8QTEmulator_autogen/include)
 file(MAKE_DIRECTORY ${AUTOGEN_INCLUDE})
