@@ -34,11 +34,17 @@
      <string>File</string>
     </property>
     <addaction name="actionLoad_ROM_File"/>
+    <addaction name="actionDo_Snapshot"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
      <string>Settings</string>
     </property>
+    <addaction name="actionDisplay_Colors"/>
+    <addaction name="actionSound"/>
+    <addaction name="actionControl"/>
+    <addaction name="actionOpen_Log_Console"/>
+    <addaction name="actionSnapshots"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
@@ -64,6 +70,36 @@
   <action name="actionGitHub">
    <property name="text">
     <string>GitHub</string>
+   </property>
+  </action>
+  <action name="actionDisplay_Colors">
+   <property name="text">
+    <string>Display Colors</string>
+   </property>
+  </action>
+  <action name="actionSound">
+   <property name="text">
+    <string>Sound</string>
+   </property>
+  </action>
+  <action name="actionControl">
+   <property name="text">
+    <string>Control</string>
+   </property>
+  </action>
+  <action name="actionOpen_Log_Console">
+   <property name="text">
+    <string>Open Log Console</string>
+   </property>
+  </action>
+  <action name="actionDo_Snapshot">
+   <property name="text">
+    <string>Do Snapshot</string>
+   </property>
+  </action>
+  <action name="actionSnapshots">
+   <property name="text">
+    <string>Snapshots</string>
    </property>
   </action>
  </widget>
