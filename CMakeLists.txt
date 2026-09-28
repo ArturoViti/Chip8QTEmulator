@@ -15,7 +15,7 @@ if(APPLE)
     set_source_files_properties(${APP_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Svg)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Svg Multimedia)
 
 add_executable(Chip8QTEmulator main.cpp
         emulator/Chip8/Chip8.h
@@ -30,6 +30,8 @@ add_executable(Chip8QTEmulator main.cpp
         emulator/Chip8/Chip8Controller.h
         ui/mainwindow.h ui/mainwindow.cpp ui/mainwindow.ui
         emulator/Logging/LogHandler.h
+        emulator/Chip8/Chip8Sound.cpp
+        emulator/Chip8/Chip8Sound.h
 )
 set(AUTOGEN_INCLUDE ${CMAKE_CURRENT_BINARY_DIR}/Chip8QTEmulator_autogen/include)
 file(MAKE_DIRECTORY ${AUTOGEN_INCLUDE})
@@ -38,7 +40,7 @@ target_include_directories(Chip8QTEmulator PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/emulator
         ${AUTOGEN_INCLUDE}
 )
-target_link_libraries(Chip8QTEmulator PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Svg)
+target_link_libraries(Chip8QTEmulator PRIVATE Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Svg Qt6::Multimedia)
 
 include(GNUInstallDirs)
 install(TARGETS Chip8QTEmulator

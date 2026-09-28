@@ -3,9 +3,14 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDir>
+#include <QAudioFormat>
+#include <QAudioSink>
+#include <QMediaDevices>
+
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "Chip8/Chip8Sound.h"
 #include "Logging/LogHandler.h"
 
 namespace {
@@ -32,6 +37,7 @@ MainWindow::MainWindow(Chip8 &chip8, QWidget *parent)
         QDesktopServices::openUrl(QUrl("https://github.com/ArturoViti"));
     });
 
+
     connect(ui->actionLoad_ROM_File, &QAction::triggered, this, [this] {
         const QString fileName = QFileDialog::getOpenFileName(
             this, tr("Open CHIP-8 ROM"), QDir::homePath(),
@@ -42,11 +48,27 @@ MainWindow::MainWindow(Chip8 &chip8, QWidget *parent)
             loadRom(fileName);
     });
 
+    cpuTimer.setTimerType(Qt::PreciseTimer);
     connect(&cpuTimer, &QTimer::timeout, this, &MainWindow::step);
+
+    // Setup Sound
+    format.setSampleRate(44100);
+    format.setChannelCount(1);
+    format.setSampleFormat(QAudioFormat::Int16);
+
+    const QAudioDevice device = QMediaDevices::defaultAudioOutput();
+    if (!device.isFormatSupported(format))
+        qCritical(Log::EmulatorLog) << "Sound not work";
+
+    this->sound = new Chip8Sound(440.0, format, this);
+    this->audioSink = new QAudioSink(device, format, this);
+    this->audioSink->setBufferSize(format.bytesForDuration(50000));
+    this->audioSink->start(this->sound);
 }
 
 void MainWindow::loadRom(const QString &path) {
     cpuTimer.stop();
+    sound->stop();
 
     try
     {
@@ -68,9 +90,13 @@ void MainWindow::step() {
             chip8.fetchAndExec();
 
         chip8.updateTimers();
+        this->sound->beepFor(chip8.getSoundTimer());   // PRIMA del decremento
         display->update();
     }
-    catch ( const std::exception &e ) { cpuTimer.stop(); qFatal(Log::Chip8Log) << e.what(); }
+    catch ( const std::exception &e ) { cpuTimer.stop(); sound->stop(); qFatal(Log::Chip8Log) << e.what(); }
 }
 
-MainWindow::~MainWindow() { qInfo(Log::EmulatorLog) << "Emulator ended."; delete ui; }
+MainWindow::~MainWindow() {
+    qInfo(Log::EmulatorLog) << "Emulator ended.";
+    delete ui;
+}

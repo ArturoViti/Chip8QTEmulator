@@ -59,6 +59,7 @@ class Chip8 {
         void updateTimers();
         void reset();
         void load(const std::string &filename);
+        inline uint8_t getSoundTimer() const { return this->ST; }
 };
 
 #endif //CHIP8QTEMULATOR_CHIP8_H

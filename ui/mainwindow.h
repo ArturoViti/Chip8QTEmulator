@@ -1,9 +1,13 @@
 #pragma once
+#include <QAudioFormat>
+#include <QAudioSink>
+#include <QMediaDevices>
 #include <QMainWindow>
 #include <QTimer>
 #include "Chip8/Chip8.h"
 #include "Chip8/Chip8Display.h"
 
+class Chip8Sound;
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -22,4 +26,7 @@ private:
     Chip8 &chip8;
     Chip8Display *display;
     QTimer cpuTimer;
+    QAudioFormat format;
+    Chip8Sound *sound;
+    QAudioSink *audioSink;
 };
